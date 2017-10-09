@@ -1,0 +1,5 @@
+.idea/
+sdk/
+examples/.pub
+examples/.packages
+examples/pubspec.lock
