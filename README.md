@@ -27,3 +27,8 @@ To run examples serve run:
 
 `$ solarium serve --path examples`
 
+
+#### Autocomplete (WebStorm)
+
+To get autocomplete to work in Webstorm copy the sdk folder in the solarium directory to the root of this project.
+Or you can adjust the paths under `examples/lib/_embedder.yaml` as needed. You may need to restart Webstorm
