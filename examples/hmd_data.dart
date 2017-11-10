@@ -1,9 +1,4 @@
 import 'dart:mason';
-import 'dart:solarium_io';
-import 'dart:math' as math;
-import 'dart:async';
-import 'dart:ui' as ui;
-import 'dart:typed_data';
 import 'dart:materials' as m;
 
 @Application(
@@ -28,13 +23,15 @@ main() async {
 
   var materialInstance = material.createInstance();
 
+  var sphere = await Mesh.sphere();
+
   world.onBeginFrame = (FrameData frameData) {
     var rightController = frameData.devices[Device.OCULUS_TOUCH_RIGHT];
     var leftController = frameData.devices[Device.OCULUS_TOUCH_LEFT];
     frameData.headset;// Access to headset position.
     var rightPos = rightController.position;
     world.render([
-      new Renderable(materialInstance, Mesh.Sphere(),
+      new Renderable(materialInstance, sphere,
           new Matrix4.identity()..translate(rightPos.x, rightPos.y, rightPos.z)..scale(0.2))
     ]);
     world.scheduleFrame();

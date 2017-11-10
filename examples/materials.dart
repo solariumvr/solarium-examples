@@ -22,6 +22,9 @@ main() async {
   // the compile process is asynchronous
   var material = await materialBuilder.compile();
 
+  var sphere = await Mesh.sphere();
+//  var sphere = await Mesh.plane(normal: new Vector3(0.5, 0.0, 0.5));
+
   var rowCount = 7;
   var colCount = 7;
   var spacing = 0.3;
@@ -43,7 +46,7 @@ main() async {
       var transform = new Matrix4.identity()
         ..translate(x, y, -1.0)
         ..scale(0.1);
-      renderables.add(new Renderable(materialInstance, Mesh.Sphere(), transform));
+      renderables.add(new Renderable(materialInstance, sphere, transform));
     }
   }
 

@@ -31,11 +31,12 @@ main() async {
   var material = await materialBuilder.compile();
 
   var renderables = new List<Renderable>();
+  var sphere = await Mesh.sphere();
 
   // Rusted Iron - we put the default values as the rusted iron. No need to set instance params.
   var ironMaterial = material.createInstance();
-  renderables.add(new Renderable(ironMaterial, Mesh.Sphere(), new Matrix4.identity()
-    ..translate(-1.0, 1.0, -1.0)
+  renderables.add(new Renderable(ironMaterial, sphere, new Matrix4.identity()
+    ..translate(-.5, 1.4, -1.0)
     ..scale(0.2)
   ));
 
@@ -46,11 +47,12 @@ main() async {
     "roughness": roughness2,
     "ao": ao2,
   });
-  renderables.add(new Renderable(grassMaterial, Mesh.Sphere(), new Matrix4.identity()
-    ..translate(1.0, 1.0, -1.0)
+
+  renderables.add(new Renderable(grassMaterial, sphere, new Matrix4.identity()
+    ..translate(.5, 1.4, -1.0)
     ..scale(0.2)
   ));
 
-  world.render(renderables,[new PointLight()]);
+  world.render(renderables,[new PointLight(color: new Vector3(10.0,10.0,10.0))]);
   print("Scene Rendered");
 }

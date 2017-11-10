@@ -2,4 +2,5 @@
 sdk/
 examples/.pub
 examples/.packages
+examples/packages
 examples/pubspec.lock

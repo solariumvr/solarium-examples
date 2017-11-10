@@ -9,9 +9,9 @@ import 'dart:materials' as m;
 Physics physics;
 
 @Application(
-  title: "Hello World2",
-  description: "This is my VR app",
-  keywords: const ['hello', 'world'],
+  title: "Physics",
+  description: "Physics Example",
+  keywords: const ['physics'],
 )
 main() async {
   // All materials must be created using a [MaterialBuilder]
@@ -31,26 +31,62 @@ main() async {
   var materialInstance = material.createInstance();
 
   var planeCollider = new PlaneYCollider();
-  planeCollider.setScale(new Vector3(3.0, 3.0, 3.0));
+  planeCollider.setScale(new Vector3(40.0, 40.0, 40.0));
   var c = new CollisionObject(planeCollider);
   c.setTransform(new Transform(position: new Vector3(0.0, 0.0, 0.0)));
-  physics = new Physics();
+  physics = new Physics(gravity: new Vector3(0.0, -1.0, 0.0));
   physics.addCollisionObject(c);
 
-  var sphere = new SphereCollider(0.2);
-  var rigidBody = new RigidBody(5.0, sphere);
-  rigidBody
-      .setTransform(new Transform(position: new Vector3(0.0, 10.0, 0.005)));
-  physics.addRigidBody(rigidBody);
+  var sphere = new SphereCollider(0.25);
+
+  var size = 7;
+  var rigidBodies = new List<RigidBody>(size * size * size);
+
+  var yStart = 10.0;
+  var xStart = -5.0;
+  var zStart = -10.0;
+  var space = 0.4;
+
+  var index = 0;
+  for (var i = 0; i < size; i++) {
+    for(var j = 0; j < size; j++){
+      for(var k = 0; k < size; k++){
+        var rigidBody = new RigidBody(1.0, sphere);
+        var x = space * i;
+        var y = space * j;
+        var z = space * k;
+
+        rigidBody.setTransform(
+          new Transform(position: new Vector3(xStart + x, yStart + y, zStart + z)));
+        physics.addRigidBody(rigidBody);
+        rigidBodies[index] = rigidBody;
+        index++;
+      }
+    }
+  }
+
+  var sphereMesh = await Mesh.sphere();
 
   world.onBeginFrame = (FrameData frameData) {
     physics.step(frameData.timeDelta);
-    world.render([
-      new Renderable(
+    var renderables = new List<Renderable>();
+    for (var r in rigidBodies) {
+      renderables.add(
+        new Renderable(
           materialInstance,
-          Mesh.Sphere(),
-          rigidBody.getTransform().matrix)
-    ]);
+          sphereMesh,
+          r.transform.matrix..scale(0.5))
+      );
+    }
+    world.render(renderables, [new PointLight()]);
+//    for(var i = 20; i < 20; i++){
+//      world.render([
+//        new Renderable(
+//          materialInstance,
+//          Mesh.Sphere(),
+//          rigidBody.transform.matrix)
+//      ]);
+//    }
     world.scheduleFrame();
   };
   world.scheduleFrame();

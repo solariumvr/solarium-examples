@@ -1,5 +1,5 @@
-name: untitled
-description: A sample command-line application.
+name: solarium_examples
+description: SolariumVR examples
 version: 0.0.1
 #homepage: https://www.example.com
 #author: Michael <email@example.com>
@@ -11,8 +11,11 @@ dependencies:
   barback: ^0.15.2
   build: ^0.9.0
   build_barback: ^0.2.0
-  solarium_sdk:
-    path: ../sdk
+  solarium_mason:
+
+dependencies_overrides:
+  solarium_mason:
+    path: ../../mason
 
 dev_dependencies:
   test: ^0.12.0
