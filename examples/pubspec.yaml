@@ -15,7 +15,7 @@ dependencies:
 
 dependencies_overrides:
   solarium_mason:
-    path: ../../mason
+    path: ../../solarium_mason
 
 dev_dependencies:
   test: ^0.12.0

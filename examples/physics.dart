@@ -78,7 +78,7 @@ main() async {
           r.transform.matrix..scale(0.5))
       );
     }
-    world.render(renderables, [new PointLight()]);
+    world.render(renderables, [new PointLight(position: new Vector3(0.0, 10.0, 0.0))]);
 //    for(var i = 20; i < 20; i++){
 //      world.render([
 //        new Renderable(

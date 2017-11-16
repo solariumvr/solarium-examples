@@ -1,12 +1,16 @@
 import 'dart:mason';
-import 'dart:solarium_io';
 import 'dart:math' as math;
-import 'dart:async';
 import 'dart:ui' as ui;
-import 'dart:typed_data';
+import 'dart:collection';
 import 'dart:materials' as m;
-import 'dart:ui' as ui;
 import 'package:solarium_mason/solarium_mason.dart' as mason;
+
+class Bullet {
+  Vector3 position;
+  Vector3 direction;
+  Vector3 color;
+  Bullet(this.position, this.direction, this.color);
+}
 
 Physics physics;
 ui.Window w1;
@@ -18,6 +22,32 @@ ui.Window w2;
   keywords: const ['scene', 'example'],
 )
 main() async {
+
+  // All materials must be created using a [MaterialBuilder]
+  var ballMaterialBuilder = new m.MaterialBuilder();
+
+  // Constants such as double's, Vector2, Vector3, Vector4
+  // will be compiled into the shader and can not be changed at a later time.
+  ballMaterialBuilder.baseColor =
+  new Vector4(0.0, 0.6, 0.5, 1.0);
+
+  //Material Parameters can be changed
+  ballMaterialBuilder.metallic = new m.ScalarParam("metallic", 1.0);
+  ballMaterialBuilder.roughness = new m.ScalarParam("roughness", 1.0);
+
+  // the compile process is asynchronous
+  var ballMaterial = await ballMaterialBuilder.compile();
+
+  var materialInstance = ballMaterial.createInstance();
+
+  var sphere = await Mesh.sphere();
+
+  var bullets = new Queue<Bullet>();
+  TrackableDevice rightController;
+  bool triggerLoaded = true;
+
+
+
   /// Window variable should be global for now. There is a bug where garbage
   /// collection will try to destroy window object.
   w1 = new ui.Window(512, 512);
@@ -52,6 +82,7 @@ main() async {
       ..addPicture(ui.Offset.zero, picture)
       ..pop();
     w1.render(sceneBuilder.build());
+    w1.scheduleFrame();
   };
   w1.scheduleFrame();
 
@@ -89,7 +120,7 @@ main() async {
   w2.scheduleFrame();
   mason.AssetBundle assets = await mason.AssetBundle.import("assets/cube.gltf");
 
-  var renderables = await mason.renderStaticScene(assets.scenes[0]);
+  var sceneRenderables = await mason.renderStaticScene(assets.scenes[0]);
   // All materials must be created using a [MaterialBuilder]
   var materialBuilder = new m.MaterialBuilder();
 
@@ -104,20 +135,87 @@ main() async {
 
   var plane = await Mesh.plane(normal: new Vector3(0.0, 0.0, 1.0));
 
-  renderables.add(new Renderable(
+  sceneRenderables.add(new Renderable(
       material.createInstance(),
       plane,
       new Matrix4.identity()
         ..translate(2.4, 1.4, -2.0)
         ..rotateY(-45.0)));
 
-  renderables.add(new Renderable(
+  sceneRenderables.add(new Renderable(
       material.createInstance({"t": w2.texture}),
       plane,
       new Matrix4.identity()
         ..translate(0.0, 1.0, 2.0)
         ..rotateY(math.PI)));
 
-  world.render(
-      renderables, [new PointLight(position: new Vector3(0.0, 10.0, 0.0))]);
+
+
+  world.addInputListener((InputState state) {
+    bool add = state.buttons.indexOf(Button.ovrButton_A) > -1;
+    if(add){
+      var forward = new Vector3(0.0, 0.0, -1.0);
+      Vector3 pointerDirection = forward
+        ..applyQuaternion(rightController.orientation);
+      bullets.add(new Bullet(rightController.position, pointerDirection,
+        new Vector3.random().normalized()));
+      if (bullets.length > 140) {
+        bullets.removeFirst();
+      }
+
+    }
+    if (state.analogs.containsKey(AnalogInput.ovrTouch_RIndexTrigger)) {
+      Vector2 value = state.analogs[AnalogInput.ovrTouch_RIndexTrigger];
+      if (value.x > 0.5 && triggerLoaded) {
+        triggerLoaded = false;
+        var forward = new Vector3(0.0, 0.0, -1.0);
+        Vector3 pointerDirection = forward
+          ..applyQuaternion(rightController.orientation);
+        bullets.add(new Bullet(rightController.position, pointerDirection,
+          new Vector3.random().normalized()));
+        if (bullets.length > 300) {
+          bullets.removeFirst();
+        }
+      }
+
+      if(value.x <= 0.5 && !triggerLoaded){
+        triggerLoaded = true;
+      }
+    }
+  });
+
+
+  world.onBeginFrame = (FrameData frameData) {
+    rightController = frameData.devices[Device.OCULUS_TOUCH_RIGHT];
+    var leftController = frameData.devices[Device.OCULUS_TOUCH_LEFT];
+    frameData.headset; // Access to headset position.
+
+    var forward = new Vector3(0.0, 0.0, -1.0);
+    var rightPos = rightController.position;
+
+    var renderables = new List<Renderable>();
+    renderables.add(new Renderable(
+      materialInstance,
+      sphere,
+      new Matrix4.identity()
+        ..translate(rightPos.x, rightPos.y, rightPos.z)
+        ..scale(0.2)));
+
+    for (var bullet in bullets) {
+      //update bullet
+      bullet.position += (bullet.direction * 0.7);
+      renderables.add(new Renderable(
+        ballMaterial.createInstance(),
+        sphere,
+        new Matrix4.identity()
+          ..translate(bullet.position)
+          ..scale(0.2)));
+    }
+    var finalRenderables = new List<Renderable>();
+    finalRenderables.addAll(sceneRenderables);
+    finalRenderables.addAll(renderables);
+    world.render(finalRenderables, [new PointLight(position: new Vector3(0.0, 10.0, 0.0))]);
+    world.scheduleFrame();
+  };
+  world.scheduleFrame();
 }

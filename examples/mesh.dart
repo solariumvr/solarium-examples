@@ -1,21 +1,13 @@
 import 'dart:mason';
-import 'dart:solarium_io';
-import 'dart:math' as math;
-import 'dart:async';
-import 'dart:ui' as ui;
 import 'dart:typed_data';
 import 'dart:materials' as m;
 
-Physics physics;
-
 @Application(
-  title: "Hello World2",
+  title: "Hello World",
   description: "This is my VR app",
   keywords: const ['hello', 'world'],
 )
 main() async {
-  print("AssetBundle Demo");
-
   var mesh = await Mesh.create(3, 3, [
     AttributeDescription.POSITION,
     AttributeDescription.NORMAL,
